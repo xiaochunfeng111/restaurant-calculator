@@ -46,25 +46,25 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="brand-header"><span>餐饮盈亏计算器-简易版</span><small class="signature">BY:啊龙</small></header><p class="note">所有费用假设均可在上方输入区修改，盈亏表自动计算。<a href="#sources">查看来源与口径</a>。不预填演示数字，请按实际填写。</p>
+  <header class="brand-header"><span>餐饮盈亏计算器-简易版</span><small class="signature">BY:啊龙</small></header><p class="note">所有费用假设均可在上方输入区修改，盈亏表自动计算。<a href="#sources">查看来源与口径</a>。不清楚的可留空采用参考值；已填数字优先，填0表示无此项。</p>
   <div class="banner" id="banner"></div>
 
   <div class="block">
     <h2>一、先选品类，再改你看得懂的数</h2>
     <div class="field">
-      <div class="lab"><span>品类</span><span class="hint">品类仅作分类，不自动填数据</span></div>
+      <div class="lab"><span>品类</span><span class="hint">留空项参考值随品类变化，已填值保留</span></div>
       <select id="cat"></select>
     </div>
     <div id="inputs"></div>
-    <button class="btn" id="reset">↺ 清空输入（选填费用归零）</button>
+    <button class="btn" id="reset">↺ 清空输入，使用全部参考值</button>
     <div class="note" id="note"></div>
   </div>
 
   <div class="block" style="padding-bottom:0">
     <h2>二、盈亏表（边打边算）</h2>
   </div>
-  <table id="tbl"></table><p class="note" id="audit"></p>
-<section class="block" id="sources"><h2>填写与计算口径</h2><p class="note">面积不决定单量，品类不决定成本。日均单量＝当月总订单数÷营业天数；平均每单金额＝优惠退款后、扣平台费前销售额÷订单数。有外卖时另填外卖单价，避免渠道价格不同造成扣费偏差。</p><p class="note">食材耗用＝期初库存＋本期采购－期末库存，并调整调拨和损耗。社保福利按实际雇主支出折算附加率；老板报酬按实际情况填写，不自动加收。平台费率按结算单实际费用÷外卖销售额，不重复扣优惠。未填写的选填费用视为不计，税费为0不代表免税。</p><p class="note">利润保本按当前单价、渠道结构及成本率不变估算，人工房租水电等暂按固定月费；规模变化需重新估算。现金余量为利润加折旧、扣还本和追加现金支出的简化值，不等同银行余额。回本不含淡旺季、爬坡和资金时间价值，不保证未来盈利。</p></section>
+  <p class="note">参考预算仅作初筛：租金1万元/月、4名员工、日均100单等不代表你所在地区的行业均值。税费、老板报酬、折旧和初始投入未填写时按0暂不计，可能高估利润；实际投资决策前必须补齐。</p><table id="tbl"></table><p class="note" id="audit"></p>
+<section class="block" id="sources"><h2>参考值与填写口径</h2><p class="note">参考值用于信息不足时的预算起点，不是经核验的全国行业均值。月租10000元、员工4人、水电3000元、日均100单仅为统一起步假设，需按城市、店型和排班调整。单价、食材率等按原品类假设提供，不能保证适合当地门店。税费、老板报酬、折旧和投入默认0，表示尚未计入，不能据此认为没有成本或可以回本。</p><p class="note">面积不决定单量，品类参考不能代替真实账单。日均单量＝当月总订单数÷营业天数；平均每单金额＝优惠退款后、扣平台费前销售额÷订单数。有外卖时另填外卖单价，避免渠道价格不同造成扣费偏差。</p><p class="note">食材耗用＝期初库存＋本期采购－期末库存，并调整调拨和损耗。社保福利按实际雇主支出折算附加率；老板报酬按实际情况填写，不自动加收。平台费率按结算单实际费用÷外卖销售额，不重复扣优惠。未填写的选填费用视为不计，税费为0不代表免税。</p><p class="note">利润保本按当前单价、渠道结构及成本率不变估算，人工房租水电等暂按固定月费；规模变化需重新估算。现金余量为利润加折旧、扣还本和追加现金支出的简化值，不等同银行余额。回本不含淡旺季、爬坡和资金时间价值，不保证未来盈利。</p></section>
 
 
 </div>
@@ -72,7 +72,7 @@
 <script>
 const DAYS=30;
 
-const CATS=[{"name":"快餐简餐"},{"name":"面馆"},{"name":"麻辣烫/冒菜"},{"name":"中式正餐"},{"name":"火锅"},{"name":"烧烤/烤肉"},{"name":"小吃档口"},{"name":"茶饮"},{"name":"咖啡"},{"name":"烘焙"},{"name":"日料/寿司"},{"name":"西餐/轻食"},{"name":"团餐"},{"name":"早餐"}];
+const CATS=[{"name":"快餐简餐（盖饭/便当/粉面）","price":[18,28],"food":[0.35,0.4],"rent":[0.1,0.15],"area":[60,120],"pps":[1500,2500],"ppp":[13,19],"sal":[4500,6000],"deliv":0.3,"inv":5000},{"name":"面馆（兰州/重庆小面/拉面）","price":[20,35],"food":[0.3,0.35],"rent":[0.12,0.18],"area":[50,100],"pps":[1200,2000],"ppp":[14,20],"sal":[4500,6000],"deliv":0.25,"inv":6700},{"name":"麻辣烫/冒菜/串串","price":[25,40],"food":[0.36,0.42],"rent":[0.12,0.16],"area":[50,100],"pps":[1600,2400],"ppp":[16,24],"sal":[4500,5800],"deliv":0.3,"inv":5700},{"name":"中式正餐（川湘菜/家常菜）","price":[55,90],"food":[0.38,0.45],"rent":[0.1,0.14],"area":[150,300],"pps":[1000,1800],"ppp":[20,28],"sal":[5500,7000],"deliv":0.12,"inv":6200},{"name":"火锅（川渝/牛肉/酸汤）","price":[80,120],"food":[0.4,0.45],"rent":[0.1,0.15],"area":[200,400],"pps":[1200,2000],"ppp":[22,30],"sal":[5500,7000],"deliv":0.08,"inv":7500},{"name":"烧烤/烤肉","price":[60,100],"food":[0.4,0.45],"rent":[0.1,0.15],"area":[100,200],"pps":[1100,1800],"ppp":[20,28],"sal":[5000,6500],"deliv":0.15,"inv":6000},{"name":"小吃档口（炸物/煎饼/卤味）","price":[10,20],"food":[0.3,0.38],"rent":[0.15,0.25],"area":[10,30],"pps":[3000,6000],"ppp":[7,11],"sal":[4000,5500],"deliv":0.4,"inv":6300},{"name":"茶饮（奶茶/果茶）","price":[12,22],"food":[0.3,0.35],"rent":[0.15,0.25],"area":[20,60],"pps":[2600,4800],"ppp":[8,13],"sal":[4500,6000],"deliv":0.38,"inv":10600},{"name":"咖啡（精品/社区）","price":[20,35],"food":[0.25,0.3],"rent":[0.15,0.2],"area":[60,120],"pps":[1000,1800],"ppp":[20,28],"sal":[5000,6500],"deliv":0.32,"inv":7800},{"name":"烘焙（面包/蛋糕）","price":[25,45],"food":[0.35,0.42],"rent":[0.12,0.18],"area":[60,150],"pps":[1400,2200],"ppp":[16,22],"sal":[5000,6500],"deliv":0.25,"inv":10000},{"name":"日料/寿司","price":[80,150],"food":[0.4,0.48],"rent":[0.12,0.18],"area":[120,250],"pps":[1400,2200],"ppp":[18,26],"sal":[5500,7000],"deliv":0.15,"inv":9500},{"name":"西餐/轻食/简餐","price":[50,90],"food":[0.32,0.38],"rent":[0.12,0.18],"area":[120,250],"pps":[900,1600],"ppp":[20,28],"sal":[5000,6500],"deliv":0.2,"inv":7000},{"name":"团餐/食堂档口","price":[12,20],"food":[0.45,0.5],"rent":[0.08,0.12],"area":[10,40],"pps":[2000,3500],"ppp":[10,15],"sal":[4000,5000],"deliv":0,"inv":7000},{"name":"早餐（包子/粥/粉）","price":[8,15],"food":[0.3,0.35],"rent":[0.12,0.18],"area":[30,80],"pps":[1000,1800],"ppp":[18,26],"sal":[4000,5000],"deliv":0.15,"inv":3600}];
 
 const mid=a=>(a[0]+a[1])/2;
 const roundTo=(v,s)=>Math.round(v/s)*s;
@@ -116,7 +116,9 @@ const FIELDS=[
 
 FIELDS.push(...EXTRA);
 FIELDS.push({k:"deliveryPrice",label:"外卖每单金额",unit:"元",hint:"外卖销售额÷外卖单数；有外卖必填"});
+const REFERENCE=[{"area":90,"price":23,"deliv":0.3,"foodRate":0.375,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":23},{"area":75,"price":28,"deliv":0.25,"foodRate":0.32499999999999996,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":28},{"area":75,"price":33,"deliv":0.3,"foodRate":0.39,"salary":5200,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":33},{"area":225,"price":73,"deliv":0.12,"foodRate":0.41500000000000004,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":73},{"area":300,"price":100,"deliv":0.08,"foodRate":0.42500000000000004,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":100},{"area":150,"price":80,"deliv":0.15,"foodRate":0.42500000000000004,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":80},{"area":20,"price":15,"deliv":0.4,"foodRate":0.33999999999999997,"salary":4800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":15},{"area":40,"price":17,"deliv":0.38,"foodRate":0.32499999999999996,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":17},{"area":90,"price":28,"deliv":0.32,"foodRate":0.275,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":28},{"area":105,"price":35,"deliv":0.25,"foodRate":0.385,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":35},{"area":185,"price":115,"deliv":0.15,"foodRate":0.44,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":115},{"area":185,"price":70,"deliv":0.2,"foodRate":0.35,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":70},{"area":25,"price":16,"deliv":0,"foodRate":0.475,"salary":4500,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":16},{"area":55,"price":12,"deliv":0.15,"foodRate":0.32499999999999996,"salary":4500,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":12}];
 const REQUIRED=["area","rent","water","staff","salary","price","orders","deliv","foodRate","days"];
+function referenceValues(){return {...REFERENCE[Number(catSel.value)||0]};}
 compute=function(s){
  const D=s.days,Q=s.orders*D,R=Q*s.price;
  const platform=Q*s.deliv*s.deliveryPrice*s.platformRate;
@@ -189,19 +191,14 @@ ROWS.forEach(r=>{
 });
 
 function read(){
-  const s={};
-  FIELDS.forEach(f=>{
-    const el=$("i_"+f.k);
-    let v=parseFloat(el.value);
-    if(isNaN(v))v=(REQUIRED.includes(f.k)||f.k==="deliveryPrice"&&Number($("i_deliv").value)>0||f.k==="platformRate"&&Number($("i_deliv").value)>0||f.k==="depMonths"&&Number($("i_depBase").value)>0)?NaN:0;
-    s[f.k]=f.pct?v/100:v;
-  });
-  return s;
+ const s={},d=referenceValues();
+ FIELDS.forEach(f=>{const raw=$("i_"+f.k).value; s[f.k]=raw.trim()===""?d[f.k]:Number(raw)/(f.pct?100:1);});
+ if($("i_deliveryPrice").value.trim()==="")s.deliveryPrice=s.price;
+ return s;
 }
 
-
 function explain(s,r){
- const n=v=>Number(v).toLocaleString("zh-CN",{maximumFractionDigits:2}), y=fmtY, pc=fmtP;
+ const n=v=>Number(v).toLocaleString("zh-CN",{maximumFractionDigits:2}), y=v=>(v<0?"-":"")+"¥"+Math.abs(v).toLocaleString("zh-CN",{maximumFractionDigits:2}), pc=fmtP;
  const hints={
  area:"按租赁面积填写；面积不直接决定销量",
  rent:r.revGross>0?"当前租售比 "+pc(s.rent/r.revGross)+"；按租约填":"按租约月租＋物业",
@@ -232,7 +229,25 @@ function explain(s,r){
  depMonths:"折旧摊销投入÷月数；按资产受益期估计",
  reserve:"与初始投资相加；不是月度费用，不折旧"
  };
- FIELDS.forEach(f=>$("h_"+f.k).textContent=hints[f.k]||f.hint||"按实际凭据填写，无统一行业均值");
+
+ const empty=k=>$("i_"+k).value.trim()==="";
+ const budget=keys=>keys.some(empty);
+ const revenueKeys=["orders","days","price"],wageKeys=["staff","salary"];
+ const revenuePrefix=budget(revenueKeys)?"估算月营业额":"按已填参数算月营业额";
+ const wagePrefix=budget(wageKeys)?"估算员工月工资":"按已填参数算员工月工资";
+ for(const key of Object.keys(hints)){
+   hints[key]=hints[key].replaceAll("月营业额",revenuePrefix).replaceAll("员工月工资",wagePrefix);
+ }
+ const source=k=>{const f=FIELDS.find(f=>f.k===k);const v=f.pct?pc(s[k]):n(s[k]);return f.label+" "+v+(f.pct?"":f.unit)+(empty(k)?"〔参考〕":"〔已填〕");};
+ const revenueLine=revenueKeys.map(source).join(" × ");
+ const wageLine=wageKeys.map(source).join(" × ");
+ hints.orders=revenueLine+" = "+y(r.revGross)+(budget(revenueKeys)?"〔估算营业额〕":"〔按已填参数〕");
+ hints.price=hints.orders;
+ hints.salary=wageLine+" = "+y(r.wage)+(budget(wageKeys)?"〔估算工资〕":"〔按已填参数〕");
+ hints.staff=hints.salary;
+ hints.insuranceRate=wagePrefix+" "+y(r.wage)+"（"+wageLine+"） × 用工附加率 "+pc(s.insuranceRate)+(empty("insuranceRate")?"〔参考〕":"〔已填〕")+" = "+y(r.benefits)+"/月";
+ hints.packFee="月外卖单数 "+n(s.orders*s.days*s.deliv)+(budget(["orders","days","deliv"])?"〔估算〕":"〔按已填参数〕")+" × 每单包装 "+y(s.packFee)+(empty("packFee")?"〔参考〕":"〔已填〕");
+ FIELDS.forEach(f=>$("h_"+f.k).textContent=(hints[f.k]||f.hint||"按实际填写")+( $("i_"+f.k).value.trim()===""?"":""));
  const formulas={
  revGross:"日单量 "+n(s.orders)+" × 营业天数 "+n(s.days)+" × 每单金额 "+y(s.price),
  foodPack:y(r.food)+"食材 ＋ "+y(r.pack)+"包装耗材",
@@ -253,15 +268,19 @@ function explain(s,r){
 }
 
 function render(){
+  updateReferences();
   const s=read();
     const invalid=FIELDS.find(f=>!Number.isFinite(s[f.k])||s[f.k]<0||(f.pct&&s[f.k]>1));
-  if(invalid||s.days<=0||s.days>31||!Number.isInteger(s.days)||(s.depBase>0&&s.depMonths<=0)||s.price<=0||(s.deliv>0&&s.deliveryPrice<=0)||s.deliv*s.deliveryPrice>s.price+0.00001){
-    $("banner").textContent="请补齐真实数据：金额非负、比例0–100%、营业天数1–31；有外卖须填外卖单价及扣费率，有折旧须填月数。外卖销售额不能超过总销售额。";
-    document.querySelectorAll("#tbl .a,#tbl .p,#tbl .formula").forEach(e=>e.textContent="—");$("audit").textContent="数据未填齐，暂不显示盈亏。";return;
+  if(invalid||s.days<=0||s.days>31||!Number.isInteger(s.days)||(s.depBase>0&&s.depMonths<=0)||s.price<=0||(s.deliv>0&&s.deliveryPrice<=0)||s.deliv*s.deliveryPrice>s.price+0.00001||(s.deliv===1&&Math.abs(s.deliveryPrice-s.price)>0.00001)){
+    $("banner").textContent="请补齐真实数据：金额非负、比例0–100%、营业天数1–31；有外卖须填外卖单价及扣费率，有折旧须填月数。外卖销售额不能超过总销售额；纯外卖时两处每单金额须一致。";
+    document.querySelectorAll("#tbl .a,#tbl .p,#tbl .formula").forEach(e=>e.textContent="—");$("audit").textContent="存在无效输入，暂不显示盈亏。";return;
   }
   const r=compute(s);
+ if(![r.revGross,r.net,r.cash,r.fixed,r.variable].every(Number.isFinite)){$("banner").textContent="数值过大，请检查输入金额和单量";document.querySelectorAll("#tbl .a,#tbl .p,#tbl .formula").forEach(e=>e.textContent="—");return;}
   explain(s,r);
   const v=r.revGross;
+ const estimated=FIELDS.filter(f=>$("i_"+f.k).value.trim()==="");
+ $("note").textContent="当前 "+estimated.length+" 项未填写，正在使用参考预算计算（不是你的历史数据）："+estimated.map(f=>f.label).join("、")+"。这些不是实际账单，也不是全国行业平均。输入0可明确取消某项费用。";
   $("audit").textContent="营业额 − 总成本费用 = 每月预计利润。产品毛利＝营业额－食材与耗材，尚未扣平台费和人工等。其他费用合并推广、税费、加盟费、利息、杂费与折旧，均来自上方输入。现金余量另扣还本及追加现金支出。占比统一按营业额计算；税费未核实前仅作情景估算。";
 
   // 横幅
@@ -272,7 +291,8 @@ function render(){
   else if(r.netRate<0.08){cls="warn";txt="每月赚 "+fmtY(r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
   else{cls="";txt="每月模型盈利 "+fmtY(r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
   bn.className="banner "+cls;
-  bn.innerHTML='<div class="big">'+txt+'</div><div class="sub">保本 '+(isFinite(r.bepQty)?Math.ceil(r.bepQty):"无法保本")+'（日单量）　｜　你按 '+Math.round(s.orders)+' 单/天　｜　静态回本：'+(r.payback>0?r.payback.toFixed(1)+" 个月":"当前无法回本")+'</div>';
+ txt=(estimated.length?"预算估算：":"按已填参数测算：")+txt;
+  bn.innerHTML='<div class="big">'+txt+'</div><div class="sub">保本 '+(isFinite(r.bepQty)?Math.ceil(r.bepQty-1e-9):"无法保本")+'（日单量）　｜　你按 '+Math.round(s.orders)+' 单/天　｜　静态回本：'+(s.invest+s.reserve===0?"未填写投入，不计算":r.payback>0?Math.max(.1,r.payback).toFixed(1)+" 个月":"当前无法回本")+'</div>';
 
   // 表格
   const vals={...r, foodPack:r.food+r.pack, otherCombined:r.expense-r.platform-r.labor-r.rent-r.water,totalCost:r.revGross-r.net,bepDay:r.bep/s.days};
@@ -280,35 +300,36 @@ function render(){
     if(row.t==="sec")return;
     const el=$("a_"+row.k), pe=$("p_"+row.k);
     let txt="", pct="";
-    if(row.k==="payback"){txt=row.fix!==undefined?(vals.payback>0?vals.payback.toFixed(1):"当前无法回本"):"—";pct="—";}
+    if(row.k==="payback"){txt=row.fix!==undefined?(s.invest+s.reserve===0?"未填写投入，不计算":vals.payback>0?Math.max(.1,vals.payback).toFixed(1):"当前无法回本"):"—";pct="—";}
     else if(row.pct){txt=fmtP(vals[row.k]);pct="—";}
-    else if(row.k==="bepQty"||row.k==="cashBep"){txt=Math.ceil(vals[row.k]).toLocaleString("zh-CN");pct="—";}
+    else if(row.k==="bepQty"||row.k==="cashBep"){txt=Math.ceil(vals[row.k]-1e-9).toLocaleString("zh-CN");pct="—";}
     else if(row.num){txt=fmtY(vals[row.k]);pct=v>0?fmtP(vals[row.k]/v):"—";}
     else{txt=Math.round(vals[row.k]).toLocaleString("zh-CN");pct="—";}
     el.textContent=Number.isFinite(vals[row.k])?txt:"无法计算/无法保本";
     el.className="a"+(vals[row.k]<0?" neg":"");
     pe.textContent=pct;
+ if(estimated.length&&row.k==="revGross")$("f_"+row.k).textContent+="（含参考值，属估算）";
+ if(estimated.length&&row.k==="labor")$("f_"+row.k).textContent+="（有留空参数时按参考值估算）";
   });
 }
 
-function fillDefaults(){
- FIELDS.forEach(f=>{$("i_"+f.k).value=REQUIRED.includes(f.k)?"":"0";$("h_"+f.k).textContent=f.hint||"按实际填写，无此项填0";});
- $("h_area").textContent="按租赁面积填写，不推算销量";
- $("h_orders").textContent="当月总订单数÷实际营业天数";
- $("h_price").textContent="全部销售额÷全部订单数，扣优惠退款后、扣平台费前";
- $("h_foodRate").textContent="实际食材耗用÷扣平台费前销售额；耗材另计";
- $("note").textContent="必要数据按真实经营填写；选填费用无此项为0。选择品类只作分类，不再重置数值。保本和回本是基于所填参数的估算。";
- render();
+function updateReferences(){
+ const ref=REFERENCE[Number(catSel.value)||0];
+ FIELDS.forEach(f=>{const val=f.k==="deliveryPrice"?($("i_price").value.trim()===""?ref.price:Number($("i_price").value)):(ref[f.k]===undefined?0:ref[f.k]),shown=f.pct?+(val*100).toFixed(1):val;const msg="参考平均数据："+shown+f.unit+"，填0表示无此项";$("i_"+f.k).placeholder=msg;$("h_"+f.k).textContent=msg;});
 }
-catSel.addEventListener("change",()=>{render();});
+function fillDefaults(){
+ FIELDS.forEach(f=>$("i_"+f.k).value="");
+ updateReferences();render();
+}
+catSel.addEventListener("change",()=>{updateReferences();render();});
 $("reset").addEventListener("click",()=>{if(confirm("清空输入？")){fillDefaults();saveLocal();}});
 FIELDS.forEach(f=>{
   $("i_"+f.k).addEventListener("input",render);
 });
 fillDefaults();
 
-try{const saved=JSON.parse(localStorage.getItem("restaurant-inputs-real-template-v1")||"null");if(saved&&Number.isInteger(saved.cat)&&saved.cat>=0&&saved.cat<CATS.length&&saved.values){catSel.value=saved.cat;fillDefaults();FIELDS.forEach(f=>{if(saved.values[f.k]!==undefined)$("i_"+f.k).value=saved.values[f.k];});render();}}catch(e){}
-function saveLocal(){try{const values={};FIELDS.forEach(f=>values[f.k]=$("i_"+f.k).value);localStorage.setItem("restaurant-inputs-real-template-v1",JSON.stringify({cat:Number(catSel.value),values}));}catch(e){}}
+try{const saved=JSON.parse(localStorage.getItem("restaurant-inputs-reference-v2")||"null");if(saved&&Number.isInteger(saved.cat)&&saved.cat>=0&&saved.cat<CATS.length&&saved.values){catSel.value=saved.cat;fillDefaults();FIELDS.forEach(f=>{if(saved.values[f.k]!==undefined)$("i_"+f.k).value=saved.values[f.k];});updateReferences();render();}}catch(e){}
+function saveLocal(){try{const values={};FIELDS.forEach(f=>values[f.k]=$("i_"+f.k).value);localStorage.setItem("restaurant-inputs-reference-v2",JSON.stringify({cat:Number(catSel.value),values}));}catch(e){}}
 FIELDS.forEach(f=>$("i_"+f.k).addEventListener("input",saveLocal));catSel.addEventListener("change",saveLocal);
 </script>
 </body>
