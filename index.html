@@ -1,384 +1,57 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>餐饮盈亏计算器</title><meta name="description" content="餐饮投资盈亏测算：输入房租、人工、客单价和单量，实时计算利润与保本点。">
-<style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#262626;font-size:15px}
-  .wrap{max-width:520px;margin:0 auto;background:#fff;min-height:100vh;padding-bottom:40px}
-  header{background:#1f3864;color:#fff;padding:16px 14px;font-size:19px;font-weight:700;text-align:center;letter-spacing:.5px}
-  .banner{padding:12px 14px;font-size:14px;font-weight:700;line-height:1.6;background:#c6efce;color:#006100;border-bottom:1px solid #dfe3e8}
-  .banner.warn{background:#ffeb9c;color:#9c6500}
-  .banner.bad{background:#ffc7ce;color:#9c0006}
-  .banner .big{font-size:17px}
-  .banner .sub{font-weight:600;opacity:.85;font-size:12.5px;margin-top:2px}
-  .block{padding:12px 14px 4px}
-  .block h2{margin:0 0 10px;font-size:14px;color:#1f3864;font-weight:700;border-left:4px solid #1f3864;padding-left:8px}
-  .field{margin-bottom:10px}
-  .field .lab{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:#444;margin-bottom:4px}
-  .field .lab .hint{color:#999;font-size:11.5px;font-weight:400}
-  .field input,.field select{
-    width:100%;padding:11px 12px;font-size:16px;border:1px solid #d9dee5;border-radius:8px;
-    background:#fffdf3;color:#1f3864;font-weight:700;outline:none;appearance:none;
-  }
-  .field select{background:#fffdf3;font-weight:700}
-  .field input:focus,.field select:focus{border-color:#1f3864;box-shadow:0 0 0 2px rgba(31,56,100,.12)}
-  .field .unit{position:relative}
-  .field .unit span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999;font-size:12px;font-weight:400}
-  .btn{display:block;width:calc(100% - 28px);margin:6px 14px 0;padding:11px;border:1px dashed #b9c3d4;background:#f7f9fc;
-       color:#1f3864;border-radius:8px;font-size:13.5px;font-weight:600}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  tr.sec td{background:#ddebf7;color:#1f3864;font-weight:700;font-size:13.5px;padding:9px 14px;border-top:1px solid #cfdcea}
-  tr.item td{padding:9px 14px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
-  tr.item td.l{color:#333}
-  tr.item td.a{text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-  tr.item td.p{text-align:right;color:#7b8794;font-size:12px;width:62px;white-space:nowrap}
-  tr.sub td{background:#f4f8fc}
-  tr.sub td.l{font-weight:700}
-  tr.key td{background:#c6e0b4;font-weight:700;color:#1f3864;border-top:2px solid #8ea9db;border-bottom:2px solid #8ea9db}
-  tr.key td.a{font-size:16px}
-  .neg{color:#c00000}
-  .foot{padding:14px;color:#8a94a6;font-size:11.5px;line-height:1.7}
-  .note{color:#98a2b3;font-size:11.5px;padding:0 14px 10px;line-height:1.6}
-#sources table{font-size:12px} #sources td{padding:8px;vertical-align:top;overflow-wrap:anywhere} details{margin:14px 0} summary{cursor:pointer;color:#1f3864;font-weight:700} .field .lab{flex-wrap:wrap;gap:4px} .field .lab .hint{max-width:100%;color:#657085} .field input{padding-right:40px} #sources{line-height:1.7} @media(max-width:400px){tr.item td{padding:9px 6px}tr.item td.p{width:45px;font-size:11px}} .formula{display:block;font-size:11px;font-weight:400;color:#737f8c;line-height:1.5;margin-top:4px}.field .lab .hint{font-size:11px;line-height:1.5;text-align:right;flex:1 1 180px}.field .lab{align-items:baseline}tr.item td.l{min-width:0} @media(min-width:900px){.wrap{max-width:820px}.field{margin-bottom:16px}.block{padding:20px 28px}.banner{padding:20px 28px}} .brand-header{position:relative;padding:20px 18px 32px}.brand-header .signature{position:absolute;right:16px;bottom:8px;font-size:12px;font-weight:400;letter-spacing:0;color:#fff;white-space:nowrap} </style>
-</head>
-<body>
-<div class="wrap">
-  <header class="brand-header"><span>餐饮盈亏计算器</span><small class="signature">BY:晓龙</small></header><p class="note">所有费用假设均可在上方输入区修改，盈亏表自动计算。<a href="#sources">查看来源与口径</a>。默认数字仅为练习情景，不是行业平均。</p>
-  <div class="banner" id="banner"></div>
-
-  <div class="block">
-    <h2>一、先选品类，再改你看得懂的数</h2>
-    <div class="field">
-      <div class="lab"><span>品类</span><span class="hint">换品类会重置下面全部数字</span></div>
-      <select id="cat"></select>
-    </div>
-    <div id="inputs"></div>
-    <button class="btn" id="reset">↺ 恢复本品类的演示值</button>
-    <div class="note" id="note"></div>
-  </div>
-
-  <div class="block" style="padding-bottom:0">
-    <h2>二、盈亏表（边打边算）</h2>
-  </div>
-  <table id="tbl"></table><p class="note" id="audit"></p>
-<section class="block" id="sources"><h2>网上参考数据与适用范围</h2>
-<p>核验日期：2026-11-17。以下选取2025完整年度作为同一比较期间，不宣称为最新季度数据或全国行业平均。品牌及集团样本不等于独立小店；不能把多家不同口径的数据简单平均。</p>
-<table><tr class="sec"><td>参考对象</td><td>已核实数据</td><td>如何使用</td></tr>
-<tr class="item"><td>火锅：海底捞2025年报</td><td>集团原材料及易耗品40.5%；员工32.6%；水电3.4%。中国大陆人均消费95.7元；整体97.7元。</td><td>成本比率为集团口径，含其他业务；材料含耗材。人均不是订单均价，需乘每单人数。集团租赁会计口径不能当门店现金租金率。</td></tr>
-<tr class="item"><td>中式正餐/火锅：九毛九2025全年业绩</td><td>集团原材料及耗材35.5%；员工29.5%；水电4.2%。太二中国大陆人均67元，九毛九57元，怂火锅100元。</td><td>集团成本比例不能说是某个子品牌的单独食材率，更不代表所有川湘菜或面馆。员工比例含集团因素。</td></tr>
-<tr class="item"><td>咖啡：瑞幸2025全年业绩公告</td><td>材料成本187.83453亿元÷净收入492.88095亿元≈38.1%（据公告计算）。</td><td>混合直营及联营供货等业务，不是社区咖啡店纯食材率；不支持原默认25%–30%为行业平均的说法。</td></tr>
-<tr class="item"><td>茶饮：霸王茶姬2025第四季度公告</td><td>大中华区每店月均GMV337,358元。</td><td>仅该品牌该季度正常完整经营门店样本。GMV定义含税、折扣前，并按渠道计入部分配送费，不能直接填为本表折扣后销售额，也不是加盟商利润。</td></tr></table>
-<p>原默认快餐、面馆、麻辣烫、烧烤、小吃、烘焙、日料、西餐、团餐、早餐的数据，本轮未找到能按相同门店、成本和订单口径直接替换的可靠品类平均值。茶饮、咖啡、正餐、火锅虽有上述品牌参照，也不等于全国品类均值。因此保留数值仅供演示，不自动套用品牌数据。原坪效、每人管理面积、每平方米投资和外卖占比没有可信出处，已停止显示成参考区间；订单不再按原坪效反推。</p>
-<details><summary>逐项应该填什么、从哪里取数</summary>
-<p>销售：填商家优惠及退款后、平台费用前的每单金额；日单量与外卖订单占比均从收银及平台订单提取。消费者付给平台且不属于商家的配送费不算收入。不同渠道价格差异大时须拆渠道测算；本版统一均价和按订单占比扣平台费仅适于两渠道订单金额相近的情景。</p>
-<p>房租：租约月租及物业，不能用营收比例反算真实房租。水电：账单或设备功率、营业时长及单价测算。面积：租赁图纸；人数：按岗位、班次和休息日排班，不能由平方米决定。</p>
-<p>工资及附加：本地招聘报价、实际工资单、当地社保公积金缴费基数和雇主比例；12%只是旧演示假设，不是法定统一比例。老板报酬按替代该岗位所需成本估计。</p>
-<p>食材：期初库存＋采购－期末库存，调整调拨，包含损耗；除以同口径销售额。包装按单计入，其他耗材按销售额计入；若引用的是“原材料及耗材”合并比率，两项耗材应设为0，避免重复。本表食材毛利和扣耗材后的产品毛利是管理指标，不等于财报统一毛利定义。</p>
-<p>平台：按结算单实际佣金与配送费÷外卖销售额；营销折扣已经从销售额扣除，不再放入平台扣费。固定投放与按销售额推广分开，加盟费、耗材采购加价不得重复列支。</p>
-<p>税费：比例预算＋固定月预算，0表示未估算，不代表免税；增值税、附加、企业所得税/经营所得税不能统一套3%。本表采用含税收支管理口径，税费按实际现金预算扣除，不生成法定税务利润。2026年政策及纳税身份、计税周期应让会计逐项确认。</p>
-<p>投入：初始投资包含装修设备、转让、押金及开办等一次投入；备用金单列追加。折旧摊销基数只是其中可折旧摊销部分，不再次加进总投资，押金和备用金不折旧。月数是管理估计，需按设备年限和装修受益期分别加权，60月不是统一法定期限。</p>
-<p>其他固定费用：保洁、维修、软件、证照和加盟固定费等逐项预算；物业若租金已含则剔除。利息计入费用，还本只扣现金余量。净追加营运及设备现金支出按库存、应收应付变化和设备计划估计，固定月度近似不适合大幅销量变化。</p></details>
-<details><summary>盈亏表公式与边界</summary>
-<p>销售额＝日单量×营业天数×每单金额。食材毛利＝销售额－食材；产品毛利＝食材毛利－包装耗材。营业费用合计＝平台费＋人工及老板报酬＋房租＋水电＋推广＋税费预算＋其他固定＋加盟比例费＋折旧＋利息。模型利润＝产品毛利－营业费用合计。</p>
-<p>月现金余量＝模型利润＋折旧－还本－净追加现金支出。静态总投入回收期＝（初始投资＋备用金）÷月现金余量，仅模型利润和现金余量均为正时显示。属于总投入简化算法，有贷款时不是股东权益IRR或完整项目现金流回收期。</p>
-<p>单均贡献＝每单金额扣除所有随单/销售额变化费用后的余额。利润保本日单量＝月固定成本（含折旧和利息）÷单均贡献÷营业天数，向上取整；现金平衡日单量改用固定成本减折旧、加还本和追加现金支出。单均贡献≤0时无有限保本点。固定税费预算参与保本，但所得税随利润变化，需在新保本情景下由会计重算，当前结果仅线性近似。</p>
-<p>表中百分比统一除以扣平台费前销售额；无销售额时比例不适用。固定水电在销量变化时并非真正固定；需重估。跨品类利润比较必须控制城市、店型、营业时段、面积、渠道、税费和老板劳动报酬。</p></details>
-<p>来源（点击原文）：<a href="https://www.hkexnews.hk/listedco/listconews/sehk/2026/0424/2026042401135_c.pdf">海底捞2025年报，第25、28–29页</a>；
-<a href="https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0327/2026032703108.pdf">九毛九2025业绩，第4、9–10页</a>；
-<a href="https://investor.lkcoffee.com/news-releases/news-release-details/luckin-coffee-announces-fourth-quarter-and-fiscal-year-2025/">瑞幸2025全年业绩</a>；
-<a href="https://investor.chagee.com/news-releases/news-release-details/chagee-announces-fourth-quarter-and-full-year-2025-unaudited">霸王茶姬2025第四季度业绩及GMV定义</a>；
-<a href="https://www.meituan.com/news/MN211230001045976">美团佣金/配送费拆分说明</a>；
-<a href="https://qingdao.chinatax.gov.cn/ssfg2019/zxwj/202602/t20260202_102196.html">税务机关2026年增值税衔接政策</a>；
-<a href="https://bec.www.sba.gov/breakevenpointcalculator/calculate/">SBA保本公式</a>。</p>
-</section><div class="block"><h2>学习与核验</h2>
-<p>① 先选品类：快餐看午高峰与出餐速度；正餐火锅看座位、翻台与晚市；茶饮咖啡看点位和复购；烘焙看报损；团餐看合同、账期和集中客户风险。品类仅作分类，原演示值未获核验。</p>
-<p>② 统一单位：这里按“订单”计算，堂食一桌多人应填每桌订单金额，不能把人均消费直接乘桌数。堂食外卖价格不同时，填订单加权均价；食材率也须按销售额加权。</p>
-<p>③ 查毛利：食材耗用＝期初库存＋本期采购－期末库存（调拨另调整），包含损耗。食材毛利率＝1－食材耗用÷扣平台前销售额。本表产品毛利进一步扣包装耗材。</p>
-<p>④ 看保本：单均贡献＝每单销售额－单均全部变动成本；保本日单量＝月固定成本÷单均贡献÷营业天数，必须向上取整。贡献≤0时无法靠增加销量保本。水电暂按固定月费，随销量明显变化时需重新估算。</p>
-<p>⑤ 查现金：简化现金余量＝模型利润＋折旧－月还本－净追加营运及设备现金支出，假设老板报酬实际支付；还本与新增现金占用按输入估计，利息已计费用；未填写时相应影响未纳入。模型利润≤0时不展示回本月数，即使加回折旧后现金为正也须先改善盈利。静态回本不考虑爬坡、资金时间价值、退租押金与残值，不能当投资承诺。</p>
-<p>⑥ 实地取数：租赁报价及递增条款；物业和水电账单；岗位排班与完整用工报价；菜单配方称重、采购票据和损耗；平台逐单结算；连续工作日及周末分时订单观察；装修设备报价；押金、转让费、加盟费和备用金。税费填经会计确认的估算额折算率，本工具不是税务计算器。</p>
-<p>⑦ 压力测试：分别把日单量降20%、食材率加5个百分点、租金加20%，观察利润和现金余量；再尝试同时发生。所有品类默认值仅练习，不用于直接投资决策。</p>
-<p>公式核验参考：<a href="https://bec.www.sba.gov/breakevenpointcalculator/calculate/">SBA保本公式</a>；<a href="https://www.meituan.com/news/MN211230001045976">美团佣金与配送费说明</a>。平台费率按实际合同与结算单填写。</p>
-</div>
-
-
-</div>
-
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>餐饮盈亏计算器</title><style>
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;color:#263448;font:15px/1.65 -apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif}.wrap{max-width:760px;margin:auto;background:white;min-height:100vh}header{background:#203960;color:white;text-align:center;padding:20px 18px 30px;position:relative;font-size:22px;font-weight:bold}header small{position:absolute;right:16px;bottom:6px;font-size:12px;font-weight:normal}section{padding:18px}h2{font-size:17px;margin:10px 0}.note,.hint,.formula{font-size:12px;color:#697788}.hint{display:block;margin:3px 0 7px}label{display:block;margin:12px 0 0}input,select{width:100%;padding:11px;border:1px solid #ccd4df;border-radius:8px;background:#fffdf3;font:inherit;color:#203960}input:focus{outline:2px solid #b2c8e7}.banner{padding:16px 18px;background:#eef4fb;font-weight:bold}.bad{background:#ffe2e4;color:#a51d30}.good{background:#e5f2e7;color:#276537}table{width:100%;border-collapse:collapse}td{padding:12px 18px;border-bottom:1px solid #edf0f3}td:last-child{text-align:right;white-space:nowrap;font-weight:600}.key{background:#edf4fa;font-weight:bold}.formula{display:block;font-weight:normal}.optional{background:#f8fafc;padding:12px;border-radius:8px;margin-top:18px}button{background:#f1f4f8;border:1px solid #d6dce5;border-radius:7px;padding:9px 14px;margin-top:14px;color:#203960}summary{cursor:pointer;font-weight:600}.status{font-size:12px;color:#65758c}a{color:#1f568b}@media(max-width:400px){td{padding:10px}header{font-size:20px}}</style></head><body><main class="wrap">
+<header>餐饮盈亏计算器<small>BY:晓龙</small></header><div id="banner" class="banner">请填写同一个月的真实经营数据</div>
+<section><p class="note">不预填行业均值，不按面积推算销量。必填项没有数据时留空，不生成利润；选填项无此项填0。金额单位均为元。不同月份请分别计算。</p>
+<label for="category">品类（仅作记录，不改变费用）</label><select id="category"><option>快餐简餐</option><option>面馆</option><option>麻辣烫/冒菜</option><option>中式正餐</option><option>火锅</option><option>烧烤/烤肉</option><option>小吃档口</option><option>茶饮</option><option>咖啡</option><option>烘焙</option><option>日料</option><option>西餐/轻食</option><option>团餐</option><option>早餐</option><option>其他</option></select>
+<h2>一、填写主要数据</h2><div id="required"></div>
+<details class="optional"><summary>选填费用与投入（无此项保持0）</summary><div id="optional"></div></details>
+<button id="clear" type="button">清空本次数据</button><p id="saved" class="status"></p>
+<h2>二、简版盈亏表</h2></section><table id="results"></table>
+<section><h2>计算口径</h2><p class="note">预计经营结余＝营业额－食材耗材－平台费－人工－房租－水电－其他现金费用。扣折旧后的模型利润再减装修设备折旧。本表不是法定会计报表；含税收支按一致口径填写，税费按实际支出或已确认预算计入。</p>
+<p class="note">保本估算假设：食材、包装和平台费随销售同比变化，人工、房租、水电及其他费用在当前经营规模内固定。外卖结构、排班或采购价格变化时须重算。其他费用中如有随营业额变化的费用，须在保本测算中另行调整；本版因此只提供近似值。</p>
+<p class="note">月现金余量按已填写费用假设当月收付、再扣还本及新增资金占用估算；库存采购、账期、预付房租会让它与银行余额不同。回本以总投入÷月现金余量估算，不考虑淡旺季和开业爬坡；亏损或现金余量≤0不显示回本月数。</p>
+<p class="note">食材耗用＝期初库存＋采购－期末库存，按调拨等调整，包含损耗。老板报酬只有实际计入人工时填写，不再自动加6000元；社保按真实支出并入人工，不再套12%；平台按结算单实际金额填写，不再套28%。</p></section></main>
 <script>
-const DAYS=30;
-
-const CATS=[
- {name:"快餐简餐（盖饭/便当/粉面）",price:[18,28],food:[.35,.40],rent:[.10,.15],area:[60,120],pps:[1500,2500],ppp:[13,19],sal:[4500,6000],deliv:.30,inv:5000},
- {name:"面馆（兰州/重庆小面/拉面）",price:[20,35],food:[.30,.35],rent:[.12,.18],area:[50,100],pps:[1200,2000],ppp:[14,20],sal:[4500,6000],deliv:.25,inv:6700},
- {name:"麻辣烫/冒菜/串串",price:[25,40],food:[.36,.42],rent:[.12,.16],area:[50,100],pps:[1600,2400],ppp:[16,24],sal:[4500,5800],deliv:.30,inv:5700},
- {name:"中式正餐（川湘菜/家常菜）",price:[55,90],food:[.38,.45],rent:[.10,.14],area:[150,300],pps:[1000,1800],ppp:[20,28],sal:[5500,7000],deliv:.12,inv:6200},
- {name:"火锅（川渝/牛肉/酸汤）",price:[80,120],food:[.40,.45],rent:[.10,.15],area:[200,400],pps:[1200,2000],ppp:[22,30],sal:[5500,7000],deliv:.08,inv:7500},
- {name:"烧烤/烤肉",price:[60,100],food:[.40,.45],rent:[.10,.15],area:[100,200],pps:[1100,1800],ppp:[20,28],sal:[5000,6500],deliv:.15,inv:6000},
- {name:"小吃档口（炸物/煎饼/卤味）",price:[10,20],food:[.30,.38],rent:[.15,.25],area:[10,30],pps:[3000,6000],ppp:[7,11],sal:[4000,5500],deliv:.40,inv:6300},
- {name:"茶饮（奶茶/果茶）",price:[12,22],food:[.30,.35],rent:[.15,.25],area:[20,60],pps:[2600,4800],ppp:[8,13],sal:[4500,6000],deliv:.38,inv:10600},
- {name:"咖啡（精品/社区）",price:[20,35],food:[.25,.30],rent:[.15,.20],area:[60,120],pps:[1000,1800],ppp:[20,28],sal:[5000,6500],deliv:.32,inv:7800},
- {name:"烘焙（面包/蛋糕）",price:[25,45],food:[.35,.42],rent:[.12,.18],area:[60,150],pps:[1400,2200],ppp:[16,22],sal:[5000,6500],deliv:.25,inv:10000},
- {name:"日料/寿司",price:[80,150],food:[.40,.48],rent:[.12,.18],area:[120,250],pps:[1400,2200],ppp:[18,26],sal:[5500,7000],deliv:.15,inv:9500},
- {name:"西餐/轻食/简餐",price:[50,90],food:[.32,.38],rent:[.12,.18],area:[120,250],pps:[900,1600],ppp:[20,28],sal:[5000,6500],deliv:.20,inv:7000},
- {name:"团餐/食堂档口",price:[12,20],food:[.45,.50],rent:[.08,.12],area:[10,40],pps:[2000,3500],ppp:[10,15],sal:[4000,5000],deliv:.00,inv:7000},
- {name:"早餐（包子/粥/粉）",price:[8,15],food:[.30,.35],rent:[.12,.18],area:[30,80],pps:[1000,1800],ppp:[18,26],sal:[4000,5000],deliv:.15,inv:3600}
-];
-
-const mid=a=>(a[0]+a[1])/2;
-const roundTo=(v,s)=>Math.round(v/s)*s;
-const fmtY=v=>(v<0?"-":"")+"¥"+Math.round(Math.abs(v)).toLocaleString("zh-CN");
-const fmtP=v=>(v*100).toFixed(1)+"%";
-
-function defaults(i){
-  const c=CATS[i];
-  const area=Math.round(mid(c.area));
-  const price=Math.round(mid(c.price));
-  const deliv=c.deliv;
-  const foodRate=mid(c.food);
-  const salary=roundTo(mid(c.sal),100);
-  const staff=4; // 演示人数，实际按排班填写
-  const orders=100; // 纯演示，不再由无出处坪效反推销量
-  const revNet=orders*DAYS*price;
-  return {area,price,deliv,foodRate,salary,staff,orders,
-          rent:10000, // 演示租金，不由销售额推算
-          water:3000, // 演示水电账单
-          invest:300000}; // 演示投入，不按面积估价
+const fields=[
+['sales','实际月营业额','优惠、退款后，扣平台费前的销售额。用收银与外卖订单对账，不直接用到账金额。',1],
+['days','本月实际营业天数','按实际开门天数填写，1–31天。',1],
+['orders','本月实际总订单数','堂食与外卖合计，按订单统计，不把就餐人数当单数。',1],
+['food','当月实际食材耗用','期初库存＋本月采购－期末库存，包含报损；不是直接拿采购额。',1],
+['labor','本月人工总支出','工资＋雇主社保福利＋实际支付的老板报酬。不要重复计算。',1],
+['rent','本月应摊房租物业','季付或年付要折成当月金额；免租或无租金明确填0。',1],
+['water','本月水电燃气','账单对应当月经营；无此项明确填0。',1],
+['pack','本月包装及其他耗材','实际耗用；食材金额若已包含耗材，此项填0。',0],
+['platform','本月平台实际费用','佣金、配送等，按结算单；不重复扣已从营业额减掉的优惠。',0],
+['other','本月其他现金费用','推广、税费、加盟、保洁、维修、软件和利息等合计，扣除上面已计入的费用。',0],
+['dep','本月折旧摊销','按实际资产投入及受益期计算；不把押金与备用金折旧。不考虑此项时填0。',0],
+['invest','实际总投入','装修、设备、开办、转让、押金及备用金等累计投入，避免重复；0时不计算回本。',0],
+['principal','本月偿还本金','贷款本金只扣现金余量，利息应计入其他费用。',0],
+['cashExtra','本月新增现金占用','库存及应收应付变化、追加设备现金支出等净增加额；与已列费用避免重复。',0]];
+const $=id=>document.getElementById(id),money=v=>'¥'+Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0}),fmt=v=>Number(v).toLocaleString('zh-CN',{maximumFractionDigits:2});
+fields.forEach(([k,l,h,req])=>{const label=document.createElement('label');label.htmlFor=k;label.textContent=l+(req?'（必填）':'');const hint=document.createElement('span');hint.className='hint';hint.textContent=h;const input=document.createElement('input');input.id=k;input.type='number';input.min='0';input.step='any';input.inputMode='decimal';input.value=req?'':'0';input.placeholder=req?'填写实际数据；确实为零时填0':'无此项填0';label.appendChild(hint);$(req?'required':'optional').append(label,input);input.addEventListener('input',render);});
+function calc(s){const material=s.food+s.pack,gross=s.sales-material,fixed=s.labor+s.rent+s.water+s.other+s.dep,variable=material+s.platform,profit=s.sales-variable-fixed,cash=profit+s.dep-s.principal-s.cashExtra,rate=s.sales>0?1-variable/s.sales:0;return {material,gross,fixed,variable,profit,cash,rate,be:rate>0?fixed/rate:NaN,payback:profit>0&&cash>0&&s.invest>0?s.invest/cash:NaN};}
+function render(){const s={},missing=[];fields.forEach(([k,l])=>{const raw=$(k).value;s[k]=raw.trim()===''?NaN:Number(raw);if(!Number.isFinite(s[k])||s[k]<0)missing.push(l);});if(Number.isFinite(s.days)&&(s.days<=0||s.days>31||!Number.isInteger(s.days)))missing.push('营业天数须为1–31整数');if(Number.isFinite(s.orders)&&!Number.isInteger(s.orders))missing.push('订单数须为整数');
+save();if(missing.length){$('banner').className='banner';$('banner').textContent='待填写或检查：'+missing.join('、');$('results').innerHTML='';return;}
+const r=calc(s),q=s.orders>0?s.sales/s.orders:NaN;
+$('banner').className='banner '+(r.profit<0?'bad':'good');$('banner').textContent='扣折旧后'+(r.profit<0?'亏损 ':'利润 ')+money(Math.abs(r.profit))+'；经营现金费用后结余 '+money(r.profit+s.dep);
+const rows=[
+['营业额',money(s.sales),'实际月销售额；当前每单金额 '+(Number.isFinite(q)?money(q):'无订单，不适用')],
+['食材与耗材',money(r.material),money(s.food)+'食材＋'+money(s.pack)+'耗材'],
+['产品毛利',money(r.gross),'营业额－食材耗材；毛利率 '+(s.sales>0?(r.gross/s.sales*100).toFixed(1)+'%':'不适用')],
+['平台费用',money(s.platform),'实际平台结算扣费'],
+['人工总支出',money(s.labor),'工资、雇主社保与已支付报酬'],
+['房租物业',money(s.rent),'当月应摊金额'],
+['水电燃气',money(s.water),'当月账单'],
+['其他现金费用',money(s.other),'实际填入的合计费用'],
+['经营结余（未扣折旧）',money(r.profit+s.dep),'营业额－全部现金经营费用'],
+['折旧摊销',money(s.dep),'本月非现金费用'],
+['扣折旧后模型利润',money(r.profit),'经营结余－折旧摊销'],
+['每日保本订单估算',s.sales>0&&s.orders>0&&r.rate>0?fmt(Math.ceil(r.be/q/s.days))+'单':'暂无法估算','固定成本÷单均贡献÷营业天数；按本月成本结构近似'],
+['月现金余量估算',money(r.cash),'模型利润＋折旧－还本－新增现金占用'],
+['静态回本估算',Number.isFinite(r.payback)?r.payback.toFixed(1)+'个月':s.invest===0?'未填写投入，不计算':'当前无法回本','总投入÷月现金余量；只在利润和现金为正时显示']];
+$('results').innerHTML=rows.map(([l,v,f])=>'<tr'+(l.includes('利润')||l.includes('结余')?' class="key"':'')+'><td>'+l+'<span class="formula">'+f+'</span></td><td>'+v+'</td></tr>').join('');
 }
-
-const EXTRA=[
-{k:"mktFixed",label:"固定推广预算/月",unit:"元",v:0,hint:"与销售额无关的投放；不与比例推广重复"},
-{k:"taxFixed",label:"其他固定税费预算/月",unit:"元",v:0,hint:"所得税等经会计估算；不要与税费率重复"},
-{k:"interest",label:"贷款利息/月",unit:"元",v:0},
-{k:"principal",label:"偿还贷款本金/月",unit:"元",v:0,hint:"影响现金余量，不计入利润费用"},
-{k:"extraCash",label:"净追加营运及设备支出/月",unit:"元",v:0,hint:"库存占款、应收账期及设备更新；只填新增现金占用"},
-{k:"franchiseRate",label:"按营业额加盟管理费",unit:"%",pct:true,v:0,hint:"若已计入采购价或其他费则不重复"},
-
-{k:"days",label:"每月营业天数",unit:"天",v:30},
-{k:"platformRate",label:"外卖综合扣费率",unit:"%",pct:true,v:28,hint:"只含佣金及配送等平台费用；商家优惠已从销售额扣除，不重复扣"},
-{k:"packFee",label:"每单外卖包装成本",unit:"元",v:1.2},
-{k:"takeRate",label:"全部订单其他耗材率",unit:"%",pct:true,v:1},
-{k:"mktRate",label:"额外推广费率",unit:"%",pct:true,v:2.5},
-{k:"taxRate",label:"税费现金支出估算率",unit:"%",pct:true,v:0,hint:"0仅表示待填写；咨询当地会计，不代表免税"},
-{k:"insuranceRate",label:"雇主额外用工成本率",unit:"%",pct:true,v:12,hint:"社保公积金福利等；按当地实际填写"},
-{k:"owner",label:"老板劳动报酬/月",unit:"元",v:6000},
-{k:"other",label:"其他固定费用/月",unit:"元",v:2000,hint:"物业、保洁、维修、证照、加盟固定费等"},
-{k:"depBase",label:"可折旧摊销投入",unit:"元",v:180000,hint:"装修设备等；押金和周转金不计入"},
-{k:"depMonths",label:"折旧摊销月数",unit:"月",v:60},
-{k:"reserve",label:"开业周转备用金",unit:"元",v:60000,hint:"追加到初始投资，不重复包含"}
-];
-const FIELDS=[
- {k:"area",label:"经营面积",unit:"㎡",hint:"品类参考 "+""},
- {k:"rent",label:"月租金（含物业）",unit:"元",hint:"按租约填写；含物业，不用营收比例反推"},
- {k:"water",label:"月水电燃气",unit:"元",hint:"按账单填写；品牌年报仅供旁证"},
- {k:"staff",label:"员工人数",unit:"人",hint:"按全职当量折算；由排班决定，不按面积推算"},
- {k:"salary",label:"人均月薪",unit:"元",hint:"含绩效，不含社保"},
- {k:"price",label:"每单金额",unit:"元",hint:"扣商家优惠及退款后、扣平台费用前；含税管理口径"},
- {k:"orders",label:"日均订单量",unit:"单",hint:"含外卖"},
- {k:"deliv",label:"外卖占比",unit:"%",hint:"纯堂食填 0",pct:true},
- {k:"foodRate",label:"食材成本率",unit:"%",hint:"按实际耗用含损耗÷扣平台前销售额",pct:true},
- {k:"invest",label:"初始投资",unit:"元",hint:"含转让、装修、设备、押金；不含另填备用金"}
-];
-
-FIELDS.push(...EXTRA);
-compute=function(s){
- const D=s.days,Q=s.orders*D,R=Q*s.price;
- const platform=R*s.deliv*s.platformRate;
- const food=R*s.foodRate,pack=Q*s.deliv*s.packFee+R*s.takeRate;
- const wage=s.staff*s.salary, benefits=wage*s.insuranceRate, labor=wage+benefits+s.owner;
- const dep=s.depBase/s.depMonths;
- const fixed=s.rent+labor+s.water+s.other+dep+s.mktFixed+s.taxFixed+s.interest;
- const mkt=R*s.mktRate,tax=R*s.taxRate+s.taxFixed,franchise=R*s.franchiseRate;
- const variable=platform+food+pack+mkt+R*s.taxRate+franchise;
- const unit=s.price*(1-s.deliv*s.platformRate-s.foodRate-s.takeRate-s.mktRate-s.taxRate-s.franchiseRate)-s.deliv*s.packFee;
- const net=R-variable-fixed,cash=net+dep-s.principal-s.extraCash;
- const bepQty=unit>0?fixed/unit/D:Infinity;
- return {platformInfo:platform,revGross:R,wage,benefits,owner:s.owner,mktFixed:s.mktFixed,interest:s.interest,principal:s.principal,extraCash:s.extraCash,franchise,foodGross:R-food,cashBep:unit>0?(fixed-dep+s.principal+s.extraCash)/unit/D:Infinity,platform,revNet:R-platform,food,pack,gross:R-food-pack,labor,rent:s.rent,water:s.water,mkt,tax,other:s.other,dep,
- expense:fixed+mkt+R*s.taxRate+platform+franchise,net,fixed,variable,cmRate:s.price>0?unit/s.price:0,bep:bepQty*D*s.price,bepQty,cash,
- invest:s.invest+s.reserve,netRate:R>0?net/R:0,margin:s.orders>0&&isFinite(bepQty)?1-bepQty/s.orders:NaN,
- payback:net>0&&cash>0&&s.invest+s.reserve>0?(s.invest+s.reserve)/cash:0};
-};
-const ROWS=[
- {t:"sec",s:"每月收入与主要成本"},
- {t:"i",k:"revGross",l:"营业额",num:true},
- {t:"i",k:"foodPack",l:"食材与包装耗材",num:true},
- {t:"i",k:"gross",l:"产品毛利",num:true,cls:"sub"},
- {t:"i",k:"platform",l:"外卖平台费用",num:true},
- {t:"i",k:"labor",l:"人工（含老板与社保）",num:true},
- {t:"i",k:"rent",l:"房租物业",num:true},
- {t:"i",k:"water",l:"水电燃气",num:true},
- {t:"i",k:"otherCombined",l:"其他费用（含折旧）",num:true},
- {t:"i",k:"totalCost",l:"总成本费用",num:true,cls:"sub"},
- {t:"i",k:"net",l:"每月预计利润",num:true,cls:"key"},
- {t:"sec",s:"保本与回本"},
- {t:"i",k:"bepQty",l:"每天至少卖多少单",num:false},
- {t:"i",k:"invest",l:"总投入（含备用金）",num:true},
- {t:"i",k:"cash",l:"每月现金余量",num:true},
- {t:"i",k:"payback",l:"静态回本（月）",num:false,fix:1}
-];
-
-const $=id=>document.getElementById(id);
-const catSel=$("cat");
-CATS.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=c.name;catSel.appendChild(o);});
-
-// 输入区
-const inputsBox=$("inputs");
-FIELDS.forEach(f=>{
-  const d=document.createElement("div");
-  d.className="field";
-  const lab=document.createElement("div");
-  lab.className="lab";
-  lab.innerHTML='<span>'+f.label+'</span><span class="hint" id="h_'+f.k+'"></span>';
-  const wrap=document.createElement("div");
-  wrap.className="unit";
-  const inp=document.createElement("input");
-  inp.id="i_"+f.k; inp.inputMode="decimal"; inp.type="number"; inp.step="any"; inp.min="0"; if(f.pct)inp.max="100"; inp.setAttribute("aria-label",f.label);
-  inp.dataset.k=f.k; inp.dataset.pct=f.pct?"1":"";
-  const u=document.createElement("span"); u.textContent=f.unit;
-  wrap.appendChild(inp); wrap.appendChild(u);
-  d.appendChild(lab); d.appendChild(wrap);
-  inputsBox.appendChild(d);
-});
-
-// 表格
-const tbl=$("tbl");
-ROWS.forEach(r=>{
-  const tr=document.createElement("tr");
-  if(r.t==="sec"){tr.className="sec";tr.innerHTML='<td colspan="3">'+r.s+'</td>';}
-  else{
-    tr.className="item "+(r.cls||"");
-    tr.innerHTML='<td class="l">'+r.l+'<small class="formula" id="f_'+r.k+'"></small></td><td class="a" id="a_'+r.k+'"></td><td class="p" id="p_'+r.k+'"></td>';
-  }
-  tbl.appendChild(tr);
-});
-
-function read(){
-  const s={};
-  FIELDS.forEach(f=>{
-    const el=$("i_"+f.k);
-    let v=parseFloat(el.value);
-    if(isNaN(v))v=NaN;
-    s[f.k]=f.pct?v/100:v;
-  });
-  return s;
-}
-
-
-function explain(s,r){
- const n=v=>Number(v).toLocaleString("zh-CN",{maximumFractionDigits:2}), y=fmtY, pc=fmtP;
- const hints={
- area:"按租赁面积填写；面积不直接决定销量",
- rent:r.revGross>0?"当前租售比 "+pc(s.rent/r.revGross)+"；按租约填":"按租约月租＋物业",
- water:r.revGross>0?"当前占营业额 "+pc(s.water/r.revGross)+"；按账单填":"按水电燃气账单填写",
- staff:"全职当量×月薪；当前工资 "+y(r.wage)+"/月",
- salary:"员工 "+n(s.staff)+"人 × 人均月薪 "+y(s.salary)+" = 员工月工资 "+y(r.wage),
- price:"优惠退款后、扣平台费前；销售额÷订单数",
- orders:n(s.orders)+"单 × "+n(s.days)+"天 = "+n(s.orders*s.days)+"单/月",
- deliv:"当前外卖 "+n(s.orders*s.days*s.deliv)+"单/月（订单占比）",
- foodRate:"月营业额 "+y(r.revGross)+" × 食材率 "+pc(s.foodRate)+" = 月食材成本 "+y(r.food),
- invest:"＋备用金 "+y(s.reserve)+" = 总投入 "+y(r.invest),
- mktFixed:"固定预算 "+y(s.mktFixed)+"/月；不重复计比例推广",
- taxFixed:"固定税费预算；与按销售额税费合计 "+y(r.tax)+"/月",
- interest:"月度应付利息；计入利润费用",
- principal:"月度归还本金；只扣现金，不扣利润",
- extraCash:"新增库存/账期占款及设备支出；只扣现金",
- franchiseRate:"月营业额 "+y(r.revGross)+" × 加盟费率 "+pc(s.franchiseRate)+" = 月加盟费 "+y(r.franchise),
- days:n(s.days)+"天/月；按实际开门天数",
- platformRate:"月营业额 "+y(r.revGross)+" × 外卖占比 "+pc(s.deliv)+" × 扣费率 "+pc(s.platformRate)+" = 月平台费 "+y(r.platform),
- packFee:"月外卖单量 "+n(s.orders*s.days*s.deliv)+" × 每单包装 "+y(s.packFee)+"；其他耗材另计",
- takeRate:"月营业额 "+y(r.revGross)+" × 耗材率 "+pc(s.takeRate)+" = 月其他耗材 "+y(r.revGross*s.takeRate),
- mktRate:"月营业额 "+y(r.revGross)+" × 推广费率 "+pc(s.mktRate)+" = 月比例推广费 "+y(r.mkt),
- taxRate:"月营业额 "+y(r.revGross)+" × 税费估算率 "+pc(s.taxRate)+" ＋ 固定税费 "+y(s.taxFixed)+" = 月税费预算 "+y(r.tax),
- insuranceRate:"员工月工资 "+y(r.wage)+" × 用工附加率 "+pc(s.insuranceRate)+" = 月附加成本 "+y(r.benefits)+"；当地缴费另核",
- owner:"老板劳动成本 "+y(s.owner)+"/月；已计入人工",
- other:"保洁、软件、维修等固定月费；避免重复物业",
- depBase:"可摊销投入 "+y(s.depBase)+" ÷ 摊销期 "+n(s.depMonths)+"月 = 月折旧 "+y(r.dep),
- depMonths:"折旧摊销投入÷月数；按资产受益期估计",
- reserve:"与初始投资相加；不是月度费用，不折旧"
- };
- FIELDS.forEach(f=>$("h_"+f.k).textContent=hints[f.k]||f.hint||"按实际凭据填写，无统一行业均值");
- const formulas={
- revGross:"日单量 "+n(s.orders)+" × 营业天数 "+n(s.days)+" × 每单金额 "+y(s.price),
- foodPack:y(r.food)+"食材 ＋ "+y(r.pack)+"包装耗材",
- gross:y(r.revGross)+"营业额 − "+y(r.food+r.pack)+"食材耗材",
- platform:"月营业额 "+y(r.revGross)+" × 外卖占比 "+pc(s.deliv)+" × 平台扣费率 "+pc(s.platformRate),
- labor:y(r.wage)+"工资 ＋ "+y(r.benefits)+"附加 ＋ "+y(s.owner)+"老板报酬",
- rent:"输入值：月租金及物业",
- water:"输入值：月水电燃气",
- otherCombined:"推广＋税费＋加盟费＋利息＋杂费＋折旧",
- totalCost:"食材耗材＋平台＋人工＋房租＋水电＋其他",
- net:y(r.revGross)+"营业额 − "+y(r.revGross-r.net)+"总成本",
- bepQty:r.cmRate>0?y(r.fixed)+"固定成本 ÷ "+n(s.price*r.cmRate)+"元单均贡献 ÷ "+n(s.days)+"天，向上取整":"单均贡献≤0，无法靠增加销量保本",
- invest:y(s.invest)+"初始投入 ＋ "+y(s.reserve)+"备用金",
- cash:y(r.net)+"利润 ＋ "+y(r.dep)+"折旧 − "+y(s.principal)+"还本 − "+y(s.extraCash)+"追加支出",
- payback:r.payback>0?y(r.invest)+"总投入 ÷ "+y(r.cash)+"月现金余量":"利润与现金余量均为正、且有投入时才计算"
- };
- ROWS.filter(row=>row.t!=="sec").forEach(row=>$("f_"+row.k).textContent=formulas[row.k]||"");
-}
-
-function render(){
-  const s=read();
-    const invalid=FIELDS.find(f=>!Number.isFinite(s[f.k])||s[f.k]<0||(f.pct&&s[f.k]>1));
-  if(invalid||s.days<=0||s.days>31||s.depMonths<=0||s.price<=0){
-    $("banner").textContent="请填写有效数据：金额非负，比例0–100%，营业天数1–31，每单金额和折旧月数大于0。";
-    document.querySelectorAll("#tbl .a,#tbl .p,#tbl .formula").forEach(e=>e.textContent="—");return;
-  }
-  const r=compute(s);
-  explain(s,r);
-  const v=r.revGross;
-  $("audit").textContent="营业额 − 总成本费用 = 每月预计利润。产品毛利＝营业额－食材与耗材，尚未扣平台费和人工等。其他费用合并推广、税费、加盟费、利息、杂费与折旧，均来自上方输入。现金余量另扣还本及追加现金支出。占比统一按营业额计算；税费未核实前仅作情景估算。";
-
-  // 横幅
-  const bn=$("banner");
-  let cls="", txt;
-  if(r.net<0){cls="bad";txt="每月模型亏损 "+fmtY(-r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
-  else if(r.netRate<0.05){cls="bad";txt="每月只赚 "+fmtY(r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
-  else if(r.netRate<0.08){cls="warn";txt="每月赚 "+fmtY(r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
-  else{cls="";txt="每月模型盈利 "+fmtY(r.net)+"（模型利润率 "+(r.revGross>0?fmtP(r.netRate):"无销售额，不适用")+"）";}
-  bn.className="banner "+cls;
-  bn.innerHTML='<div class="big">'+txt+'</div><div class="sub">保本 '+(isFinite(r.bepQty)?Math.ceil(r.bepQty):"无法保本")+'（日单量）　｜　你按 '+Math.round(s.orders)+' 单/天　｜　静态回本：'+(r.payback>0?r.payback.toFixed(1)+" 个月":"当前无法回本")+'</div>';
-
-  // 表格
-  const vals={...r, foodPack:r.food+r.pack, otherCombined:r.expense-r.platform-r.labor-r.rent-r.water,totalCost:r.revGross-r.net,bepDay:r.bep/s.days};
-  ROWS.forEach(row=>{
-    if(row.t==="sec")return;
-    const el=$("a_"+row.k), pe=$("p_"+row.k);
-    let txt="", pct="";
-    if(row.k==="payback"){txt=row.fix!==undefined?(vals.payback>0?vals.payback.toFixed(1):"当前无法回本"):"—";pct="—";}
-    else if(row.pct){txt=fmtP(vals[row.k]);pct="—";}
-    else if(row.k==="bepQty"||row.k==="cashBep"){txt=Math.ceil(vals[row.k]).toLocaleString("zh-CN");pct="—";}
-    else if(row.num){txt=fmtY(vals[row.k]);pct=v>0?fmtP(vals[row.k]/v):"—";}
-    else{txt=Math.round(vals[row.k]).toLocaleString("zh-CN");pct="—";}
-    el.textContent=Number.isFinite(vals[row.k])?txt:"无法计算/无法保本";
-    el.className="a"+(vals[row.k]<0?" neg":"");
-    pe.textContent=pct;
-  });
-}
-
-function fillDefaults(){
-  const i=parseInt(catSel.value,10)||0;
-  const d=defaults(i); EXTRA.forEach(f=>d[f.k]=f.pct?f.v/100:f.v);
-  FIELDS.forEach(f=>{
-    const el=$("i_"+f.k);
-    el.value=f.pct?+(d[f.k]*100).toFixed(1):d[f.k];
-  });
-  const c=CATS[i];
-  $("note").textContent="默认值仅作演示，不是行业均值。说明随输入更新；真实费用按合同、账单与结算单填写。下方附有品牌财报参考及来源。";
-  render();
-}
-
-catSel.addEventListener("change",fillDefaults);
-$("reset").addEventListener("click",fillDefaults);
-FIELDS.forEach(f=>{
-  $("i_"+f.k).addEventListener("input",render);
-});
-fillDefaults();
-
-try{const saved=JSON.parse(localStorage.getItem("restaurant-inputs-v1")||"null");if(saved&&Number.isInteger(saved.cat)&&saved.cat>=0&&saved.cat<CATS.length&&saved.values){catSel.value=saved.cat;fillDefaults();FIELDS.forEach(f=>{if(saved.values[f.k]!==undefined)$("i_"+f.k).value=saved.values[f.k];});render();}}catch(e){}
-function saveLocal(){try{const values={};FIELDS.forEach(f=>values[f.k]=$("i_"+f.k).value);localStorage.setItem("restaurant-inputs-v1",JSON.stringify({cat:Number(catSel.value),values}));}catch(e){}}
-FIELDS.forEach(f=>$("i_"+f.k).addEventListener("input",saveLocal));catSel.addEventListener("change",saveLocal);$("reset").addEventListener("click",saveLocal);
-</script>
-</body>
-</html>
+function save(){try{const values={};fields.forEach(([k])=>values[k]=$(k).value);localStorage.setItem('restaurant-actual-v1',JSON.stringify({category:$('category').value,values}));$('saved').textContent='自动保存在当前浏览器，不上传经营数据';}catch(e){$('saved').textContent='当前浏览器无法保存，请自行记录';}}
+try{const data=JSON.parse(localStorage.getItem('restaurant-actual-v1')||'null');if(data&&data.values){fields.forEach(([k])=>{if(data.values[k]!==undefined)$(k).value=data.values[k];});if(data.category)$('category').value=data.category;}}catch(e){}
+$('clear').addEventListener('click',()=>{if(confirm('清空当前填写的数据？')){fields.forEach(([k,l,h,req])=>$(k).value=req?'':'0');render();}});$('category').addEventListener('change',save);render();
+</script></body></html>
