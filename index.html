@@ -46,7 +46,7 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="brand-header"><span>餐饮盈亏计算器-简易版</span><small class="signature">BY:啊龙</small></header><p class="note">所有费用假设均可在上方输入区修改，盈亏表自动计算。<a href="#sources">查看来源与口径</a>。不清楚的可留空采用参考值；已填数字优先，填0表示无此项。</p>
+  <header class="brand-header"><span>餐饮盈亏计算器-简易版</span><small class="signature">BY:阿龙</small></header><p class="note">所有费用假设均可在上方输入区修改，盈亏表自动计算。<a href="#sources">查看来源与口径</a>。不清楚的可留空采用参考值；已填数字优先，填0表示无此项。</p>
   <div class="banner" id="banner"></div>
 
   <div class="block">
@@ -111,11 +111,21 @@ const FIELDS=[
  {k:"orders",label:"日均订单量",unit:"单",hint:"含外卖"},
  {k:"deliv",label:"外卖占比",unit:"%",hint:"纯堂食填 0",pct:true},
  {k:"foodRate",label:"食材成本率",unit:"%",hint:"按实际耗用含损耗÷扣平台前销售额",pct:true},
- {k:"invest",label:"初始投资",unit:"元",hint:"含转让、装修、设备、押金；不含另填备用金"}
+ {k:"invest",label:"初始投资（装修、厨房设备、桌椅碗筷、招牌、收银系统、办证、押金、转让费等…）",unit:"元",hint:"含转让、装修、设备、押金；不含另填备用金"}
 ];
 
 FIELDS.push(...EXTRA);
 FIELDS.push({k:"deliveryPrice",label:"外卖每单金额",unit:"元",hint:"外卖销售额÷外卖单数；有外卖必填"});
+const INPUT_GROUPS=[
+ {name:"营业与订单",keys:["area","days","price","orders"]},
+ {name:"外卖相关",keys:["deliv","deliveryPrice","platformRate","packFee"]},
+ {name:"食材与耗材",keys:["foodRate","takeRate"]},
+ {name:"房租、水电与人工",keys:["rent","water","staff","salary","insuranceRate"]},
+ {name:"推广、加盟及其他费用",keys:["mktFixed","mktRate","franchiseRate","taxFixed","taxRate","other"]},
+ {name:"投资与现金支出",keys:["invest","reserve","depBase","depMonths","extraCash"]}
+];
+const keptFields=INPUT_GROUPS.flatMap(g=>g.keys.map(k=>FIELDS.find(f=>f.k===k)));
+FIELDS.splice(0,FIELDS.length,...keptFields);
 const REFERENCE=[{"area":90,"price":23,"deliv":0.3,"foodRate":0.375,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":23},{"area":75,"price":28,"deliv":0.25,"foodRate":0.32499999999999996,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":28},{"area":75,"price":33,"deliv":0.3,"foodRate":0.39,"salary":5200,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":33},{"area":225,"price":73,"deliv":0.12,"foodRate":0.41500000000000004,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":73},{"area":300,"price":100,"deliv":0.08,"foodRate":0.42500000000000004,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":100},{"area":150,"price":80,"deliv":0.15,"foodRate":0.42500000000000004,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":80},{"area":20,"price":15,"deliv":0.4,"foodRate":0.33999999999999997,"salary":4800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":15},{"area":40,"price":17,"deliv":0.38,"foodRate":0.32499999999999996,"salary":5300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":17},{"area":90,"price":28,"deliv":0.32,"foodRate":0.275,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":28},{"area":105,"price":35,"deliv":0.25,"foodRate":0.385,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":35},{"area":185,"price":115,"deliv":0.15,"foodRate":0.44,"salary":6300,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":115},{"area":185,"price":70,"deliv":0.2,"foodRate":0.35,"salary":5800,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":70},{"area":25,"price":16,"deliv":0,"foodRate":0.475,"salary":4500,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":16},{"area":55,"price":12,"deliv":0.15,"foodRate":0.32499999999999996,"salary":4500,"staff":4,"orders":100,"rent":10000,"water":3000,"invest":0,"mktFixed":0,"taxFixed":0,"interest":0,"principal":0,"extraCash":0,"franchiseRate":0,"days":30,"platformRate":0.28,"packFee":1.2,"takeRate":0.01,"mktRate":0.025,"taxRate":0,"insuranceRate":0.12,"owner":0,"other":2000,"depBase":0,"depMonths":60,"reserve":0,"deliveryPrice":12}];
 const REQUIRED=["area","rent","water","staff","salary","price","orders","deliv","foodRate","days"];
 function referenceValues(){return {...REFERENCE[Number(catSel.value)||0]};}
@@ -142,7 +152,7 @@ const ROWS=[
  {t:"i",k:"foodPack",l:"食材与包装耗材",num:true},
  {t:"i",k:"gross",l:"产品毛利",num:true,cls:"sub"},
  {t:"i",k:"platform",l:"外卖平台费用",num:true},
- {t:"i",k:"labor",l:"人工（含老板与社保）",num:true},
+ {t:"i",k:"labor",l:"人工（含社保）",num:true},
  {t:"i",k:"rent",l:"房租物业",num:true},
  {t:"i",k:"water",l:"水电燃气",num:true},
  {t:"i",k:"otherCombined",l:"其他费用（含折旧）",num:true},
@@ -162,6 +172,7 @@ CATS.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textCo
 // 输入区
 const inputsBox=$("inputs");
 FIELDS.forEach(f=>{
+  const group=INPUT_GROUPS.find(g=>g.keys[0]===f.k); if(group){const heading=document.createElement("h3");heading.textContent=group.name;heading.style.cssText="grid-column:1/-1;margin:18px 0 0;font-size:16px;color:#203b66";inputsBox.appendChild(heading);}
   const d=document.createElement("div");
   d.className="field";
   const lab=document.createElement("div");
@@ -191,7 +202,7 @@ ROWS.forEach(r=>{
 });
 
 function read(){
- const s={},d=referenceValues();
+ const s={interest:0,principal:0,owner:0},d=referenceValues();
  FIELDS.forEach(f=>{const raw=$("i_"+f.k).value; s[f.k]=raw.trim()===""?d[f.k]:Number(raw)/(f.pct?100:1);});
  if($("i_deliveryPrice").value.trim()==="")s.deliveryPrice=s.price;
  return s;
@@ -253,7 +264,7 @@ function explain(s,r){
  foodPack:y(r.food)+"食材 ＋ "+y(r.pack)+"包装耗材",
  gross:y(r.revGross)+"营业额 − "+y(r.food+r.pack)+"食材耗材",
  platform:"月外卖单数 "+n(s.orders*s.days*s.deliv)+" × 外卖单价 "+y(s.deliveryPrice)+" × 扣费率 "+pc(s.platformRate),
- labor:y(r.wage)+"工资 ＋ "+y(r.benefits)+"附加 ＋ "+y(s.owner)+"老板报酬",
+ labor:y(r.wage)+"工资 ＋ "+y(r.benefits)+"附加 ",
  rent:"输入值：月租金及物业",
  water:"输入值：月水电燃气",
  otherCombined:"推广＋税费＋加盟费＋利息＋杂费＋折旧",
@@ -261,7 +272,7 @@ function explain(s,r){
  net:y(r.revGross)+"营业额 − "+y(r.revGross-r.net)+"总成本",
  bepQty:r.cmRate>0?y(r.fixed)+"固定成本 ÷ "+n(s.price*r.cmRate)+"元单均贡献 ÷ "+n(s.days)+"天，向上取整":"单均贡献≤0，无法靠增加销量保本",
  invest:y(s.invest)+"初始投入 ＋ "+y(s.reserve)+"备用金",
- cash:y(r.net)+"利润 ＋ "+y(r.dep)+"折旧 − "+y(s.principal)+"还本 − "+y(s.extraCash)+"追加支出",
+ cash:y(r.net)+"利润 ＋ "+y(r.dep)+"折旧 − "+y(s.extraCash)+"追加支出",
  payback:r.payback>0?y(r.invest)+"总投入 ÷ "+y(r.cash)+"月现金余量":"利润与现金余量均为正、且有投入时才计算"
  };
  ROWS.filter(row=>row.t!=="sec").forEach(row=>$("f_"+row.k).textContent=formulas[row.k]||"");
